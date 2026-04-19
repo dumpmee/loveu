@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>For You 💖</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  overflow: hidden;
+  background: #000;
+  color: white;
+}
+
+/* SCREEN */
+.screen {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  opacity: 0;
+  transition: 1s;
+}
+
+.active {
+  opacity: 1;
+  z-index: 1;
+}
+
+/* ENVELOPE */
+.envelope {
+  width: 220px;
+  height: 140px;
+  background: #ff4d6d;
+  position: relative;
+  cursor: pointer;
+  transform: scale(1);
+  transition: 0.5s;
+}
+
+.envelope:hover {
+  transform: scale(1.1);
+}
+
+.flap {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 110px solid transparent;
+  border-right: 110px solid transparent;
+  border-bottom: 70px solid #ff758f;
+  top: -70px;
+  transition: 1s;
+}
+
+.open .flap {
+  transform: rotateX(180deg);
+}
+
+/* PANDA */
+.panda {
+  font-size: 100px;
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0); }
+}
+
+/* CAKE */
+.cake {
+  font-size: 100px;
+  cursor: pointer;
+}
+
+.flame {
+  font-size: 40px;
+}
+
+/* FADE TEXT */
+.fade {
+  animation: fadeIn 2s;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+/* CONFETTI */
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: red;
+  top: 0;
+  animation: fall 3s linear infinite;
+}
+
+@keyframes fall {
+  to { transform: translateY(100vh); }
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- 1 ENVELOPE -->
+<div class="screen active" id="s1">
+  <div class="envelope" onclick="openEnvelope(this)">
+    <div class="flap"></div>
+  </div>
+  <p>Klik suratnya 💌</p>
+</div>
+
+<!-- 2 PANDA -->
+<div class="screen" id="s2">
+  <div class="panda">🐼💖</div>
+  <p class="fade">Hai kamu... ada sesuatu buat kamu 😳</p>
+  <button onclick="next(3)">Buka 👉</button>
+</div>
+
+<!-- 3 BIRTHDAY -->
+<div class="screen" id="s3">
+  <h1 class="fade">🎉 Happy Birthday 🎉</h1>
+  <p>Selamat ulang tahun ke-<span id="umur">20</span> 💖</p>
+
+  <div class="cake">🎂</div>
+  <div id="flame" class="flame">🔥</div>
+
+  <p>Tiup lilinnya yaa 😆 (pakai mic 🎤)</p>
+</div>
+
+<!-- 4 MEMORY -->
+<div class="screen" id="s4">
+  <h1>💖 Kenangan Kita 💖</h1>
+  <p>Makasih udah ada di hidup aku 🥺</p>
+</div>
+
+<!-- MUSIC -->
+<audio id="music" loop>
+  <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3">
+</audio>
+
+<script>
+// NAVIGATION
+function next(n) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("s"+n).classList.add("active");
+}
+
+// ENVELOPE OPEN
+function openEnvelope(el) {
+  el.classList.add("open");
+  document.getElementById("music").play();
+  setTimeout(()=> next(2), 1200);
+}
+
+// CONFETTI
+function confetti() {
+  for (let i = 0; i < 50; i++) {
+    let c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random()*100 + "vw";
+    c.style.background = `hsl(${Math.random()*360},100%,50%)`;
+    document.body.appendChild(c);
+
+    setTimeout(()=> c.remove(), 3000);
+  }
+}
+
+// MIC BLOW DETECTION
+navigator.mediaDevices.getUserMedia({ audio: true })
+.then(stream => {
+  const ctx = new AudioContext();
+  const mic = ctx.createMediaStreamSource(stream);
+  const analyser = ctx.createAnalyser();
+  mic.connect(analyser);
+
+  const data = new Uint8Array(analyser.frequencyBinCount);
+
+  function detect() {
+    analyser.getByteFrequencyData(data);
+    let volume = data.reduce((a,b)=>a+b)/data.length;
+
+    if (volume > 60) { // threshold tiupan
+      blow();
+    }
+
+    requestAnimationFrame(detect);
+  }
+
+  detect();
+});
+
+function blow() {
+  document.getElementById("flame").innerText = "💨";
+  confetti();
+  setTimeout(()=> next(4), 2000);
+}
+</script>
+
+</body>
+</html>
